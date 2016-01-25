@@ -4,7 +4,7 @@ import os
 from pygame.locals import *
 from PIL import Image
 from network import *
-from random import shuffle
+from digitParser import *
 
 pygame.init()
 
@@ -18,6 +18,7 @@ height = 400
 surface = pygame.display.set_mode((width, height))
 pygame.display.set_caption('Train Handwriting')
 
+#Clamp method to detech rectangle collision
 def clamp(value, maximum, minimum):
 	if value > maximum:
 		return maximum
@@ -26,6 +27,7 @@ def clamp(value, maximum, minimum):
 	else:
 		return value
 
+#Check point to rectangle collision
 def checkWithinRect(point, rad, rect, rectw, recth):
 	closestX = clamp(point[0], rect[0], rect[0]+rectw)
 	closestY = clamp(point[1], rect[1], rect[1]+recth)
@@ -39,61 +41,36 @@ def checkWithinRect(point, rad, rect, rectw, recth):
 	else:
 		return False
 
-def parseData():
-	x = []
-	y = []
-	dataDir = False
-	dataDirs = []
-	for i in os.walk(os.getcwd()+"/images"):
-		if dataDir:
-			dataDirs.append(i[0])
-		dataDir = True
-	for i in dataDirs:
-		for root, dirs, files in os.walk(i):
-			for f in files:
-				if f.endswith(".txt"):
-					cf = open(i+'/'+f, 'r')
-					data = map(int, (cf.read().replace('[', '').replace(',', '').replace(']', '').split(' ')))
-					x.append(data)
-					result = int(i[len(i)-1])
-					resultList = [0]*10
-					resultList[result] = 1
-					y.append(resultList)
-	return np.array((x), dtype=float), np.array((y), dtype=float), x, y
+#Find coordinates to crop image to maximum amount
+def cropCoords(pixelList):
+	left = 1e9
+	right = -1
+	upper = 1e9
+	lower = -1
+	colCount = 0
+	rowCount = 0
+	for p in pixelList:
+		if colCount == imageSize:
+			colCount = 0
+			rowCount += 1
+		if p == 0:
+			if colCount > right:
+				right = colCount
+			if colCount < left:
+				left = colCount
+			if rowCount > lower:
+				lower = rowCount
+			if rowCount < upper:
+				upper = rowCount
+		colCount += 1
+	return left, right, upper, lower
 
-def networkTrain(NN):
-	T = Trainer(NN)
-	data = parseData()
-	xdata = data[2]
-	ydata = data[3]
-	# for i in xdata:
-	# 	for index, item in enumerate(i):
-	# 		if item == -1:
-	# 			i[index] = 0
-	picker = range(len(xdata))
-	shuffle(picker)
-	trainset = int(len(xdata)*.8)
-	pickersplit=[picker[x:x+trainset] for x in xrange(0, len(picker), trainset)]
-	trainx = []
-	testx = []
-	trainy = []
-	testy = []
-	for p in pickersplit[0]:
-		trainx.append(xdata[p])
-		trainy.append(ydata[p])
-	for t in pickersplit[1]:
-		testx.append(xdata[t])
-		testy.append(ydata[t])
-	trainx = np.array(trainx, dtype=float)
-	trainy = np.array(trainy, dtype=float)
-	testx = np.array(testx, dtype=float)
-	testy = np.array(testy, dtype=float)
-	return T.train(trainx, trainy, testx, testy)
 
 windowLoop = True
 BLACK = (0,0,0)
 WHITE = (255,255,255)
 
+#Makes a grid on the canvas
 start_pos = []
 end_pos = []
 gridSize = 5
@@ -113,11 +90,13 @@ pressed = 0
 start = (0,0)
 lines = []
 
+#Initiates display with "Training Network..." loading screen
 fontsm = pygame.font.SysFont("Arial", 40)
 text = fontsm.render("Training Network...", True, (255, 255, 255))
 surface.blit(text, (surface.get_rect().center[0]-(text.get_rect().center[0]),200))
 pygame.display.flip()
 
+#Loads canvas and brush
 canvas = pygame.Rect(0,0,recW,recH)
 panel = pygame.Rect((401,0,300,400))
 cansub = surface.subsurface(canvas)
@@ -129,7 +108,7 @@ surface.fill(BLACK, rect=panel)
 # for i in gridRects:
 # 		pygame.draw.rect(surface, i[2], pygame.Rect(i[0], i[1], gridSize, gridSize))
 
-
+#Code for hidden layer testing and pruning
 # minCost = 1e9
 # minH = 0
 
@@ -155,14 +134,16 @@ surface.fill(BLACK, rect=panel)
 # print minH
 # print minCost
 
-NN = Neural_Network(16, Lambda=0.0, hLayer = 23)
+#Instantiate Neural Network Object and train it
+NN = Neural_Network(16, Lambda=0.0, hLayer = 28)
 cost = networkTrain(NN)
 pressed = False
 
 
-#Main loop
+#Main application loop
 while windowLoop:
 
+	#Paint lines if mouse is pressed
 	if pygame.mouse.get_pressed()[0] == 1:
 		pressed = True
 		mosPos = pygame.mouse.get_pos()
@@ -180,51 +161,36 @@ while windowLoop:
 		mosCan = True
 	else:
 		mosCan = False
+
+	#Save and analyze image on mouse release
 	if pygame.mouse.get_pressed()[0] == 0 and pressed and mosCan:
 		pressed = False
-
+		#Save image
 		pygame.image.save(cansub, os.getcwd() + "/temp.jpg")
 		test = Image.open(os.getcwd()+"/temp.jpg")
 		imageSize = 400
 		test = test.resize((imageSize,imageSize), Image.ANTIALIAS).convert('1')
-		pix = list(test.getdata())
-		if 0 in pix:
-
-			left = 1e9
-			right = -1
-			upper = 1e9
-			lower = -1
-			colCount = 0
-			rowCount = 0
-			for p in pix:
-				if colCount == imageSize:
-					colCount = 0
-					rowCount += 1
-				if p == 0:
-					if colCount > right:
-						right = colCount
-					if colCount < left:
-						left = colCount
-					if rowCount > lower:
-						lower = rowCount
-					if rowCount < upper:
-						upper = rowCount
-				colCount += 1
+		pixels = list(test.getdata())
+		if 0 in pixels: #If image isn't empty
+			left, right, upper, lower = cropCoords(pixels)
 			test = test.crop((left, upper, right, lower))
 			imageSize = 16
 			test = test.resize((imageSize,imageSize), Image.ANTIALIAS).convert('1')
 			pix = list(test.getdata())
 			newpix = []
+			#Change to pixel data to binary
 			for p in pix:
 				if p == 255:
 					newpix.append(-1)
 				else:
 					newpix.append(1)
-			empt = []
-			empt.append(newpix)
+			pixelData = []
+			pixelData.append(newpix)
+
+			#Forward propagate using Neural Network and display results
 			surface.fill(BLACK, rect=panel)
-			jawn = np.array(empt, dtype=float)
-			result = list(NN.forward(jawn)[0])
+			collected_data = np.array(pixelData, dtype=float)
+			result = list(NN.forward(collected_data)[0])
 			val = str(result.index(max(result)))
 			font = pygame.font.SysFont("Arial", 70)
 			fontsm = pygame.font.SysFont("Arial", 40)
@@ -240,7 +206,7 @@ while windowLoop:
 			text = font.render(str(percent)+"%", True, (255,255,255))
 			surface.blit(text, (panel.center[0]-(text.get_rect().center[0]),250))
 
-
+	#Save current canvas image to training/testing data
 	if save:
 		panel = pygame.Rect((401,0,300,400))
 		surface.fill(BLACK, rect=panel)
@@ -275,39 +241,23 @@ while windowLoop:
 					pressed = False
 					mosCan = False
 					
+					#Save digit image on the canvas
 					pygame.image.save(cansub, os.getcwd()+"/images/" + b + "/"+str(maxnum)+".jpg")
 					image = Image.open(os.getcwd()+"/images/" + b + "/"+str(maxnum)+".jpg")
 					imageSize = 400
 					image = image.resize((imageSize,imageSize), Image.ANTIALIAS).convert('1')
 					filename = os.getcwd()+"/images/" + b + "/"+str(maxnum)+".txt"
 					f = open(filename, 'w')
-					pix = list(image.getdata())
-					left = 1e9
-					right = -1
-					upper = 1e9
-					lower = -1
-					colCount = 0
-					rowCount = 0
-					for p in pix:
-						if colCount == imageSize:
-							colCount = 0
-							rowCount += 1
-						if p == 0:
-							if colCount > right:
-								right = colCount
-							if colCount < left:
-								left = colCount
-							if rowCount > lower:
-								lower = rowCount
-							if rowCount < upper:
-								upper = rowCount
-						colCount += 1
+					#Crop image
+					left, right, upper, lower = cropCoords(pixels)
 					image = image.crop((left, upper, right, lower))
+
+					#Scale image to 16 pixels
 					imageSize = 16
 					image = image.resize((imageSize,imageSize), Image.ANTIALIAS).convert('1')
-					pix = list(image.getdata())
+					pixels = list(image.getdata())
 					newpix = []
-					for p in pix:
+					for p in pixels:
 						if p == 255:
 							newpix.append(-1)
 						else:
@@ -316,6 +266,7 @@ while windowLoop:
 					f.close()
 					image.save(os.getcwd()+"/images/" + b + "/"+str(maxnum)+".jpg")
 					save = False
+					#Reset canvas and application
 					surface.fill(BLACK)
 					cansub.fill(WHITE)
 

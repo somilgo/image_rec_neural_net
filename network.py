@@ -5,6 +5,7 @@ import copy
 iteration = 0
 
 class Neural_Network(object):
+	#Intialize neural network object (requires length of square image)
 	def __init__ (self, imageSize, hLayer=10, Lambda=0):
 		self.inputLayerSize = imageSize**2
 		self.outputLayerSize = 10
@@ -15,11 +16,12 @@ class Neural_Network(object):
 		self.W2 = np.random.randn(self.hiddenLayerSize, self.outputLayerSize)
 		self.Lambda = Lambda
 
+	#Sigmoid Activation function
 	def sigmoid(self, z):
 		return 1.0 / (1.0 + np.exp(-z))
 
+	#Differentiated Sigmoid activation function
 	def sigmoidPrime(self, z):
-
 		return (np.exp(-z) / ((1.0+np.exp(-z))**2))
 
 	def forward(self, x):
@@ -29,31 +31,19 @@ class Neural_Network(object):
 		yHat = self.sigmoid(self.z3)
 		return yHat
 
+	#Cross Entropy cost function
 	def cost(self, x, y, outPut=False, test=False):
 		self.yHat = self.forward(x)
 		if outPut:
 			print self.yHat
-
-		# costs = {}
-		# count = {}
-		# for j in range(10):
-		# 	costs[j] = 0
-		# 	count[j] = 0
-		# for z in range(len(self.yHat)):
-		# 	index = y[z].tolist().index(1)
-		# 	costs[index] = costs[index]+(sum(y[z] * np.log(self.yHat[z]) + ((1-y[z])*np.log(1-self.yHat[z]))))
-		# 	count[index] = count[index]+1
-		
-		# J = 0
-		# for key in costs:
-		# 	J += -costs[key]/count[key]
-		# J = J/len(count)
 		J = (-1.0/len(x)) * sum(sum(y * np.log(self.yHat) + (1-y)*np.log(1-self.yHat)))
+		#Regularizes cost function to prevent overfitting
 		regularize = (self.Lambda/2.0/len(x)) * (sum(sum(self.W1**2)) + sum(sum(self.W2**2)))
 		if test:
 			regularize = 0
 		return J + regularize
 
+	#Compute derivative of cost function
 	def costPrime(self, x, y):
 		self.yHat = self.forward(x)
 
@@ -65,6 +55,7 @@ class Neural_Network(object):
 		dJdW1 = np.dot(x.transpose(), backError1) + (self.Lambda*sum(sum(self.W1)))/(len(x))
 		return dJdW1, dJdW2
 
+	#Squared differences cost function
 	# def cost(self, x, y):
 	# 	#Compute cost for given X,y, use weights already stored in class.
 	# 	self.yHat = self.forward(x)
@@ -132,14 +123,13 @@ class Trainer(object):
 		self.N = N
 		
 	def callbackF(self, params):
-		# global iteration
-		# iteration += 1
-		# print iteration
+		#Set parameters and add cost data to lists for graphing
 		self.N.setParams(params)
 		self.J.append(self.N.cost(self.X, self.y, test=True))
 		self.testJ.append(self.N.cost(self.testX, self.testY, test=True))
 		
 	def costFunctionWrapper(self, params, X, y):
+		#Computes cost function and dJ/dW
 		self.N.setParams(params)
 		cost = self.N.cost(X, y)
 		grad = self.N.computeGradients(X,y)		
@@ -160,23 +150,14 @@ class Trainer(object):
 		params0 = self.N.getParams()
 
 		options = {'maxiter': 25, 'disp' : True}
-		# minCost = 1e9
-		# minH = 0
-		# for h in range(1,30):
-		# 	self.J = []
-		# 	self.testJ = []
-		# 	self.N = Neural_Network(16, hLayer=h)
-		# 	_res = optimize.minimize(self.costFunctionWrapper, params0, jac=True, method='CG',
-		# 							 args=(trainX, trainY), options=options, callback=self.callbackF)
-		# 	if min(self.testJ) < minCost:
-		# 		minCost = min(self.testJ)
-		# 		minH = h
 
+		#Minimize cost function using computed gradient method
 		_res = optimize.minimize(self.costFunctionWrapper, params0, jac=True, method='CG',
 								 args=(trainX, trainY), options=options, callback=self.callbackF)
 		self.N.setParams(_res.x)
 		self.optimizationResults = _res
 
+		#Plot Cost vs Iterations graphs for testing and training data
 		plt.plot(self.J)
 		plt.plot(self.testJ)
 		plt.ylabel('Cost')
@@ -184,29 +165,5 @@ class Trainer(object):
 		plt.legend(['Training', 'Test'], loc='upper left')
 		plt.show()
 
+		#Returns average error for testing data
 		return (sum(self.testJ))/(len(self.testJ))
-
-		
-
-		# x = []
-		# y = []
-		# x.append(self.X[0])
-		# y.append(self.y[0])
-		# x = np.array(x, dtype=float)
-		# y = np.array(y, dtype=float)
-
-# x = np.array([[3,2], [7, 8], [1,5]], dtype=float)
-# y = np.array([[98],[75],[88]], dtype=float)
-
-
-
-# nn = Neural_Network(6)
-# g =  computeNumericalGradient(nn, x, y)
-# p = nn.costPrime(x, y)
-# import itertools
-
-# n = [item for sublist in p[0] for item in sublist]
-# for i in [item for sublist in p[1] for item in sublist]:
-# 	n.append(i)
-# print p
-# print n/g
