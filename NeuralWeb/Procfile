@@ -1,0 +1,1 @@
+web: gunicorn NeuralWeb.wsgi --log-file -

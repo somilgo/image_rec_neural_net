@@ -13,7 +13,6 @@ def parseData():
 	dataDir = False
 	dataDirs = []
 	print os.path.join(settings.STATIC_ROOT, 'imageData/')
-	print os.walk(os.path.join(settings.STATIC_ROOT, 'imageData/'))
 	for i in os.walk(os.path.join(settings.STATIC_ROOT, 'imageData/')):
 		if dataDir:
 			dataDirs.append(i[0])

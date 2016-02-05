@@ -1,4 +1,4 @@
-{%load staticfiles%}
+{%load static from staticfiles%}
 
 <html>
 
@@ -106,7 +106,7 @@ $('#canvas').mouseup(function(e){
 	{
 		var dt = canvas.toDataURL();
 		$.ajax({
-			url: 'http://localhost:8000/run_digit_network',
+			url: '/run_digit_network/',
 			type: 'POST',
 			data : { imageData : dt, csrfmiddlewaretoken: '{{ csrf_token }}'},
 			datatype : 'http',
