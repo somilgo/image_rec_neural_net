@@ -1,0 +1,23 @@
+#canvas
+{
+	border: 1px solid black;
+	float:left;
+}
+
+tr
+{
+	margin: auto;
+	text-align: center;
+}
+
+#button
+{
+	margin: auto;
+}
+
+#prediction
+{
+	width: 10em;
+	height: auto;
+	margin:20px
+}

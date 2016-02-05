@@ -1,0 +1,142 @@
+{%load staticfiles%}
+
+<html>
+
+<head>
+
+<link rel="stylesheet" type="text/css" href="{% static 'neuralNet/mainStyle.css' %}" />
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
+<script src="{% static 'neuralNet/html2canvas.js' %}"></script>
+
+</head>
+
+<body style="background-color:#ccb3ff;">
+
+<table><tr><td>
+<div id="canvasDiv" width='500' height='500'></div></td><td>
+<h1 id = "prediction" class = 'alert alert-success'>Draw a digit!</h1>
+<button id = "button" class = 'btn btn-lg btn-primary' onclick="clearCanvas()">Clear Canvas</button></td>
+</tr></table>
+
+<script>
+
+var canvasDiv = document.getElementById('canvasDiv');
+canvas = document.createElement('canvas');
+canvas.setAttribute('id', 'canvas');
+canvas.setAttribute('width', 400);
+canvas.setAttribute('height', 400);
+
+canvasDiv.appendChild(canvas);
+if(typeof G_vmlCanvasManager != 'undefined') {
+	canvas = G_vmlCanvasManager.initElement(canvas);
+}
+context = canvas.getContext("2d");
+context.fillStyle = "white";
+context.fillStyle = "white";
+context.fillRect(0,0,400,400);
+context.fill();
+$('#canvas').mousedown(function(e){
+  var mouseX = e.pageX - this.offsetLeft;
+  var mouseY = e.pageY - this.offsetTop;
+		
+  paint = true;
+  addClick(e.pageX - this.offsetLeft, e.pageY - this.offsetTop);
+  redraw();
+});
+
+$('#canvas').mousemove(function(e){
+  if(paint){
+    addClick(e.pageX - this.offsetLeft, e.pageY - this.offsetTop, true);
+    redraw();
+  }
+});
+
+$('#canvas').mouseleave(function(e){
+  paint = false;
+});
+
+var clickX = new Array();
+var clickY = new Array();
+var clickDrag = new Array();
+var paint;
+
+function addClick(x, y, dragging)
+{
+  clickX.push(x);
+  clickY.push(y);
+  clickDrag.push(dragging);
+}
+
+function redraw(){
+  context.clearRect(0, 0, context.canvas.width, context.canvas.height); // Clears the canvas
+  context.strokeStyle = "black";
+  context.lineJoin = "round";
+  context.lineWidth = 20;
+	context.fillStyle = "white";
+	context.fillRect(0,0,400,400);
+	context.fill();
+			
+  for(var i=0; i < clickX.length; i++) {		
+    context.beginPath();
+    if(clickDrag[i] && i){
+      context.moveTo(clickX[i-1], clickY[i-1]);
+     }else{
+       context.moveTo(clickX[i]-1, clickY[i]);
+     }
+     context.lineTo(clickX[i], clickY[i]);
+     context.closePath();
+     context.stroke();
+  }
+}
+
+function clearCanvas() {
+    context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+		context.fillStyle = "white";
+		context.fillRect(0,0,400,400);
+		context.fill();
+    clickX = new Array();
+    clickY = new Array();
+    clickDrag = new Array();
+
+}
+
+$('#canvas').mouseup(function(e){
+	if (paint)
+	{
+		var dt = canvas.toDataURL();
+		$.ajax({
+			url: 'http://localhost:8000/run_digit_network',
+			type: 'POST',
+			data : { imageData : dt, csrfmiddlewaretoken: '{{ csrf_token }}'},
+			datatype : 'http',
+			success: function(data) {
+					var dataList = data.split(",");
+					var percent = Number((parseFloat(dataList[1])*100.0).toFixed(2))
+					$('#prediction').text("The number you drew is a " 
+						+ dataList[0] + " with a certainty of " + percent +"%");
+					if (percent > 50)
+					{
+						$("#prediction").attr('class', 'alert alert-success');
+					}
+					else if (percent > 10)
+					{
+						$("#prediction").attr('class', 'alert alert-warning');
+					}
+					else
+					{
+						$("#prediction").attr('class', 'alert alert-danger');
+					}
+
+			},
+			failure: function(data) { 
+					alert('Sorry, there was an error.');
+			}
+		});
+	}
+	paint = false;
+});
+</script>
+</body>
+
+</html>

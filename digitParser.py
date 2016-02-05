@@ -10,7 +10,7 @@ def parseData():
 	y = []
 	dataDir = False
 	dataDirs = []
-	for i in os.walk(os.getcwd()+"/images"):
+	for i in os.walk("/home/somil/Documents/SRC-NN/NeuralWeb/neuralNet/static/imageData/"):
 		if dataDir:
 			dataDirs.append(i[0])
 		dataDir = True
@@ -55,3 +55,6 @@ def networkTrain(NN):
 	testx = np.array(testx, dtype=float)
 	testy = np.array(testy, dtype=float)
 	return T.train(trainx, trainy, testx, testy)
+
+print os.getcwd()+"/images/"
+print parseData()
