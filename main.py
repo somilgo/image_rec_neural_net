@@ -135,7 +135,7 @@ surface.fill(BLACK, rect=panel)
 # print minCost
 
 #Instantiate Neural Network Object and train it
-NN = Neural_Network(16, Lambda=0.0, hLayer = 28)
+NN = Neural_Network(iLayer=256, oLayer=10, hLayer=28, Lambda=0.01)
 cost = networkTrain(NN)
 pressed = False
 

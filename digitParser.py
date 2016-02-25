@@ -10,7 +10,7 @@ def parseData():
 	y = []
 	dataDir = False
 	dataDirs = []
-	for i in os.walk("/home/somil/Documents/SRC-NN/NeuralWeb/neuralNet/static/imageData/"):
+	for i in os.walk("/home/somil/Documents/SRC-NN/images"):
 		if dataDir:
 			dataDirs.append(i[0])
 		dataDir = True
@@ -19,7 +19,7 @@ def parseData():
 			for f in files:
 				if f.endswith(".txt"):
 					cf = open(i+'/'+f, 'r')
-					data = map(int, (cf.read().replace('[', '').replace(',', '').replace(']', '').split(' ')))
+					data = map(int, (cf.read().replace('[', '').replace(',', '').replace('-1', '0').replace(']', '').split(' ')))
 					x.append(data)
 					result = int(i[len(i)-1])
 					resultList = [0]*10
@@ -37,7 +37,7 @@ def networkTrain(NN):
 	#Randomizes order of data list indexes
 	shuffle(picker)
 	#Chooses 80% of the data as the training set
-	trainset = int(len(xdata)*.8)
+	trainset = int(len(xdata)*.7)
 	pickersplit=[picker[x:x+trainset] for x in xrange(0, len(picker), trainset)]
 	trainx = []
 	testx = []
@@ -54,7 +54,19 @@ def networkTrain(NN):
 	trainy = np.array(trainy, dtype=float)
 	testx = np.array(testx, dtype=float)
 	testy = np.array(testy, dtype=float)
-	return T.train(trainx, trainy, testx, testy)
 
-print os.getcwd()+"/images/"
-print parseData()
+	T.train(trainx, trainy, testx, testy)
+
+	numberCorrect = 0
+	total = 0
+	#Print out percent of test data that is accurate
+	# for i in range(len(testx)):
+	# 	w = NN.forward(testx[i])
+	# 	d = testy[i]
+	# 	if list(w).index(max(w))==list(d).index(max(d)):
+	# 		numberCorrect+=1
+	# 	total+=1
+
+	# print numberCorrect
+	# print total
+	# print float(numberCorrect)/total * 100

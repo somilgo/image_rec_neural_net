@@ -3,7 +3,7 @@
 <html>
 
 <head>
-
+<title>Digit Recognition | Neural Network</title>
 <link rel="stylesheet" type="text/css" href="{% static 'neuralNet/mainStyle.css' %}" />
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
 <script type="text/javascript" src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
@@ -15,11 +15,58 @@
 
 <table><tr><td>
 <div id="canvasDiv" width='500' height='500'></div></td><td>
-<h1 id = "prediction" class = 'alert alert-success'>Draw a digit!</h1>
+<h1 id = "prediction" class = 'alert alert-success'>Training Neural Network...</h1>
 <button id = "button" class = 'btn btn-lg btn-primary' onclick="clearCanvas()">Clear Canvas</button></td>
-</tr></table>
-
+</tr><tr><td>
+<div id = 'subclass'>
+<div id="subLabel">Didn't guess it right? Please submit the actual digit.</div>
+<select id="select">
+	
+	{% for r in digits%}
+  <option value={{r}}>{{r}}</option>
+	{%endfor%}
+</select>
+<button id = "submit" class = 'btn btn-lg btn-primary' onclick="submitdig()">Submit</button></div>
+</td></tr>
+</table>
 <script>
+
+$(document).ready(function() {
+	$('#subclass').children().hide();
+	$.ajax({
+			url: '/load_network/',
+			type: 'POST',
+			data : { filler : "filler", csrfmiddlewaretoken: '{{ csrf_token }}'},
+			datatype : 'http',
+			success: function(data) {
+				$('#prediction').text("Done! Draw a digit.");
+			},
+			failure: function(data) { 
+					alert('Sorry, there was an error.');
+			}
+		});
+
+});
+
+function submitdig()
+{
+	var dig = $( "#select option:selected" ).text();
+	var dt = canvas.toDataURL();
+	$.ajax({
+		url: '/submit_digit/',
+		type: 'POST',
+		data : { digit : dig, imageData : dt, csrfmiddlewaretoken: '{{ csrf_token }}'},
+		datatype : 'http',
+		success: function(data) {
+			clearCanvas();
+			$('#prediction').text("Thanks for telling me that was a " + dig)
+
+		},
+		failure: function(data) { 
+				alert('Sorry, there was an error.');
+		}
+	});
+}
 
 var canvasDiv = document.getElementById('canvasDiv');
 canvas = document.createElement('canvas');
@@ -69,6 +116,7 @@ function addClick(x, y, dragging)
 }
 
 function redraw(){
+	$('#subclass').children().show();
   context.clearRect(0, 0, context.canvas.width, context.canvas.height); // Clears the canvas
   context.strokeStyle = "black";
   context.lineJoin = "round";
@@ -91,6 +139,7 @@ function redraw(){
 }
 
 function clearCanvas() {
+	$('#subclass').children().hide();
     context.clearRect(0, 0, context.canvas.width, context.canvas.height);
 		context.fillStyle = "white";
 		context.fillRect(0,0,400,400);

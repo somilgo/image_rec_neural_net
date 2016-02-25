@@ -6,9 +6,9 @@ iteration = 0
 
 class Neural_Network(object):
 	#Intialize neural network object (requires length of square image)
-	def __init__ (self, imageSize, hLayer=10, Lambda=0):
-		self.inputLayerSize = imageSize**2
-		self.outputLayerSize = 10
+	def __init__ (self, iLayer=2, oLayer=10, hLayer=10, Lambda=0):
+		self.inputLayerSize= iLayer
+		self.outputLayerSize = oLayer
 		#Set number of neurons in hidden layer to mean of input layer and output layer
 		self.hiddenLayerSize = hLayer
 
@@ -158,12 +158,12 @@ class Trainer(object):
 		self.optimizationResults = _res
 
 		#Plot Cost vs Iterations graphs for testing and training data
-		plt.plot(self.J)
-		plt.plot(self.testJ)
-		plt.ylabel('Cost')
-		plt.xlabel('Iterations')
-		plt.legend(['Training', 'Test'], loc='upper left')
-		plt.show()
+		# plt.plot(self.J)
+		# plt.plot(self.testJ)
+		# plt.ylabel('Cost')
+		# plt.xlabel('Iterations')
+		# plt.legend(['Training', 'Test'], loc='upper left')
+		# plt.show()
 
 		#Returns average error for testing data
 		return (sum(self.testJ))/(len(self.testJ))

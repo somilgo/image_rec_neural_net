@@ -148,7 +148,7 @@ class Trainer(object):
 		
 		params0 = self.N.getParams()
 
-		options = {'maxiter': 25, 'disp' : True}
+		options = {'maxiter': 100, 'disp' : True}
 
 		#Minimize cost function using computed gradient method
 		_res = optimize.minimize(self.costFunctionWrapper, params0, jac=True, method='CG',

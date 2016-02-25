@@ -1,5 +1,6 @@
 import os
 import numpy as np
+from random import shuffle
 
 dataFile = open(os.getcwd()+"/wdbc.data")
 x = []
@@ -14,25 +15,51 @@ for line in dataFile:
 		y.append([0])
 	x.append(datum)
 
-from test import *
-
+from network import *
+xdata = x
+ydata = y
+picker = range(len(xdata))
+#Randomizes order of data list indexes
+shuffle(picker)
+#Chooses 80% of the data as the training set
+trainset = int(len(xdata)*.75)
+pickersplit=[picker[x:x+trainset] for x in xrange(0, len(picker), trainset)]
+trainx = []
 testx = []
+trainy = []
 testy = []
+for p in pickersplit[0]:
+	trainx.append(xdata[p])
+	trainy.append(ydata[p])
+for t in pickersplit[1]:
+	testx.append(xdata[t])
+	testy.append(ydata[t])
+#Creates training sets and testing sets
+x = testx
+y = testy
+trainx = np.array(trainx, dtype=float)
+trainy = np.array(trainy, dtype=float)
+testx = np.array(testx, dtype=float)
+testy = np.array(testy, dtype=float)
+trainx = trainx/np.amax(trainx, axis=0)
+trainy = trainy/np.amax(trainy, axis=0)
+testx = testx/np.amax(testx, axis=0)
+testy = testy/np.amax(testy, axis=0)
 
-testx.append(x.pop(20))
-testy.append(y.pop(20))
-
-xo = np.array(x, dtype=float)
-yo = np.array(y, dtype=float)
-x = xo/np.amax(xo, axis=0)
-y = yo/np.amax(yo, axis=0)
-
-nn = Neural_Network()
+nn = Neural_Network(2, notDigit=True, iLayer= 30, oLayer=1)
 t = Trainer(nn)
-t.train(x, y)
+t.train(trainx, trainy, testx, testy)
 
-testx = np.array(testx, dtype=float)/np.amax(xo, axis=0)
-testy = np.array(testy, dtype=float)/np.amax(yo, axis=0)
+numberCorrect = 0
+total = 0
 
-print nn.forward(testx)
-print testy
+for i in range(len(testx)):
+	w = nn.forward(testx[i])
+	d = testy[i] 
+	if (abs(w[0]-d[0])) < .5:
+		numberCorrect+=1
+	total+=1
+
+print numberCorrect
+print total
+print float(numberCorrect)/total * 100

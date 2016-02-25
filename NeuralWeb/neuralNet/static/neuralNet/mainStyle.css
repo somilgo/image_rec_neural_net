@@ -21,3 +21,31 @@ tr
 	height: auto;
 	margin:20px
 }
+
+#select
+{
+    padding-right: 2.5em;
+    border: 0;
+    border-radius: 3px;
+    background-color: #93ecd5;
+    color: black;
+    font-size: inherit;
+    padding: .5em;
+    margin: auto;
+}
+
+#submit
+{
+	margin: 10px;
+	background-color: #20b390;
+	border: none;
+}
+
+#subLabel
+{
+	font-size: 1em; 
+	height: 50px; 
+	width:200px;
+	margin-right: 5px;
+	display: inline-block;
+}
