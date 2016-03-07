@@ -176,6 +176,7 @@ while windowLoop:
 			test = test.crop((left, upper, right, lower))
 			imageSize = 16
 			test = test.resize((imageSize,imageSize), Image.ANTIALIAS).convert('1')
+			test.save(os.getcwd() + "/tempcrop.jpg")
 			pix = list(test.getdata())
 			newpix = []
 			#Change to pixel data to binary
@@ -198,7 +199,7 @@ while windowLoop:
 			surface.blit(text, (panel.center[0]-(text.get_rect().center[0]),20))
 			text = font.render(val, True, (255,255,255))
 			surface.blit(text, (panel.center[0]-(text.get_rect().center[0]),90))
-			percent = max(result)*100
+			percent = (max(result)/sum(result))*100
 			percent = "%.2f" % percent
 			fontsml = pygame.font.SysFont("Arial", 30)
 			text = fontsml.render("With a certainty of:", True, (255, 255, 255))

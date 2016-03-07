@@ -19,7 +19,7 @@ def parseData():
 			for f in files:
 				if f.endswith(".txt"):
 					cf = open(i+'/'+f, 'r')
-					data = map(int, (cf.read().replace('[', '').replace(',', '').replace('-1', '0').replace(']', '').split(' ')))
+					data = map(int, (cf.read().replace('[', '').replace(',', '').replace(']', '').split(' ')))
 					x.append(data)
 					result = int(i[len(i)-1])
 					resultList = [0]*10
@@ -37,7 +37,7 @@ def networkTrain(NN):
 	#Randomizes order of data list indexes
 	shuffle(picker)
 	#Chooses 80% of the data as the training set
-	trainset = int(len(xdata)*.7)
+	trainset = int(len(xdata)*.8)
 	pickersplit=[picker[x:x+trainset] for x in xrange(0, len(picker), trainset)]
 	trainx = []
 	testx = []
@@ -54,6 +54,11 @@ def networkTrain(NN):
 	trainy = np.array(trainy, dtype=float)
 	testx = np.array(testx, dtype=float)
 	testy = np.array(testy, dtype=float)
+
+	#Full training data
+	trainx = data[0]
+	trainy = data[1]
+	print len(trainx)
 
 	T.train(trainx, trainy, testx, testy)
 

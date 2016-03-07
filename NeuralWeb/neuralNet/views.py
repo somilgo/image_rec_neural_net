@@ -20,7 +20,8 @@ def run_digit_network(request):
 	collected_data = np.array(pixels, dtype=float)
 	result = list(NN.forward(collected_data)[0])
 	val = str(result.index(max(result)))
-	return HttpResponse(str(val)+","+str(max(result)))
+	prob = max(result)/sum(result)
+	return HttpResponse(str(val)+","+str(prob))
 
 def load_network(request):
 	NN = Neural_Network(16, Lambda=0.0, hLayer = 28)

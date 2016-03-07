@@ -158,12 +158,12 @@ class Trainer(object):
 		self.optimizationResults = _res
 
 		#Plot Cost vs Iterations graphs for testing and training data
-		# plt.plot(self.J)
-		# plt.plot(self.testJ)
-		# plt.ylabel('Cost')
-		# plt.xlabel('Iterations')
-		# plt.legend(['Training', 'Test'], loc='upper left')
-		# plt.show()
+		plt.plot(self.J)
+		plt.plot(self.testJ)
+		plt.ylabel('Cost')
+		plt.xlabel('Iterations')
+		plt.legend(['Training', 'Test'], loc='upper left')
+		plt.show()
 
 		#Returns average error for testing data
 		return (sum(self.testJ))/(len(self.testJ))

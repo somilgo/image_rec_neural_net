@@ -46,7 +46,7 @@ trainy = trainy/np.amax(trainy, axis=0)
 testx = testx/np.amax(testx, axis=0)
 testy = testy/np.amax(testy, axis=0)
 
-nn = Neural_Network(2, notDigit=True, iLayer= 30, oLayer=1)
+nn = Neural_Network(hLayer=10, iLayer= 30, oLayer=1)
 t = Trainer(nn)
 t.train(trainx, trainy, testx, testy)
 
