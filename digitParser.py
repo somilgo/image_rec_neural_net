@@ -37,7 +37,7 @@ def networkTrain(NN):
 	#Randomizes order of data list indexes
 	shuffle(picker)
 	#Chooses 80% of the data as the training set
-	trainset = int(len(xdata)*.8)
+	trainset = int(len(xdata)*.9)
 	pickersplit=[picker[x:x+trainset] for x in xrange(0, len(picker), trainset)]
 	trainx = []
 	testx = []
@@ -56,22 +56,23 @@ def networkTrain(NN):
 	testy = np.array(testy, dtype=float)
 
 	#Full training data
-	trainx = data[0]
-	trainy = data[1]
-	print len(trainx)
+	# trainx = data[0]
+	# trainy = data[1]
+	# print len(trainx)
 
 	T.train(trainx, trainy, testx, testy)
 
 	numberCorrect = 0
 	total = 0
 	#Print out percent of test data that is accurate
-	# for i in range(len(testx)):
-	# 	w = NN.forward(testx[i])
-	# 	d = testy[i]
-	# 	if list(w).index(max(w))==list(d).index(max(d)):
-	# 		numberCorrect+=1
-	# 	total+=1
+	for i in range(len(testx)):
+		w = NN.forward(testx[i])
+		d = testy[i]
+		if list(w).index(max(w))==list(d).index(max(d)):
+			numberCorrect+=1
+		total+=1
 
-	# print numberCorrect
-	# print total
-	# print float(numberCorrect)/total * 100
+	print numberCorrect
+	print total
+	print float(numberCorrect)/total * 100
+print parseData()

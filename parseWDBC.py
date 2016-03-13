@@ -22,7 +22,7 @@ picker = range(len(xdata))
 #Randomizes order of data list indexes
 shuffle(picker)
 #Chooses 80% of the data as the training set
-trainset = int(len(xdata)*.75)
+trainset = int(len(xdata)*.85)
 pickersplit=[picker[x:x+trainset] for x in xrange(0, len(picker), trainset)]
 trainx = []
 testx = []
@@ -47,7 +47,7 @@ testx = testx/np.amax(testx, axis=0)
 testy = testy/np.amax(testy, axis=0)
 
 nn = Neural_Network(hLayer=10, iLayer= 30, oLayer=1)
-t = Trainer(nn)
+t = Trainer(nn, iterations=30)
 t.train(trainx, trainy, testx, testy)
 
 numberCorrect = 0
@@ -60,6 +60,6 @@ for i in range(len(testx)):
 		numberCorrect+=1
 	total+=1
 
-print numberCorrect
-print total
-print float(numberCorrect)/total * 100
+print "Number Correct: " + str(numberCorrect)
+print "Testing sample size: " + str(total)
+print "Percent Accuracy: " + str(float(numberCorrect)/total * 100)

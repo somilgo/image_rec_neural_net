@@ -36,24 +36,17 @@ class Neural_Network(object):
 		self.yHat = self.forward(x)
 		if outPut:
 			print self.yHat
-		J = (-1.0/len(x)) * sum(sum(y * np.log(self.yHat) + (1-y)*np.log(1-self.yHat)))
+		J = (-1.0) * sum(sum(y * np.log(self.yHat)))
 		#Regularizes cost function to prevent overfitting
-		regularize = (self.Lambda/2.0/len(x)) * (sum(sum(self.W1**2)) + sum(sum(self.W2**2)))
 		if test:
 			regularize = 0
-		return J + regularize
+		return J
 
 	#Compute derivative of cost function
 	def costPrime(self, x, y):
 		self.yHat = self.forward(x)
 
-		#backError2 = (-y/float(len(x))/self.yHat) * self.sigmoidPrime(self.z3)
-		backError2 = (y-self.yHat)/(-float(len(x)))
-		dJdW2 = np.dot(self.a2.transpose(), backError2) + (self.Lambda*self.W2)/(len(x))
-
-		backError1 = np.dot(backError2, self.W2.transpose()) * self.sigmoidPrime(self.z2)
-		dJdW1 = np.dot(x.transpose(), backError1) + (self.Lambda*sum(sum(self.W1)))/(len(x))
-		return dJdW1, dJdW2
+		return y-self.yat
 
 	#Squared differences cost function
 	# def cost(self, x, y):
